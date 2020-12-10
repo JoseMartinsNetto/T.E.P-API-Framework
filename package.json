@@ -9,7 +9,8 @@
     "dev": "nodemon src/Application/Main.ts",
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist/",
-    "start": "npm run clean && npm run build && node dist/Application/Main.js"
+    "start": "npm run clean && npm run build && ENVIROMENT=prod node dist/Application/Main.js",
+    "start:dev": "npm run clean && npm run build && ENVIROMENT=development node dist/Application/Main.js"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -30,7 +31,6 @@
     "eslint-plugin-standard": "^4.0.1",
     "nodemon": "^1.19.4",
     "prettier": "^1.18.2",
-    "sucrase": "^3.10.1",
     "typescript": "^3.6.4"
   },
   "dependencies": {

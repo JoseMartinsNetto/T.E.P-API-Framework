@@ -1,7 +1,7 @@
 import { Column, Entity } from "typeorm"
 import { BaseModel } from "../Base"
 
-@Entity()
+@Entity("files")
 export class File extends BaseModel {
 
   @Column()
