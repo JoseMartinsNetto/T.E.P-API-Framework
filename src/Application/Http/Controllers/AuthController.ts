@@ -1,10 +1,10 @@
-import { Response } from 'express'
-import UserService from '../../../Services/UserService'
-import HttpCodes from '../HttpCodes'
-import ICustomRequest from '../../Configs/Interfaces/ICustomRequest'
+import { Response } from "express"
+import UserService from "../../../Services/UserService"
+import HttpCodes from "../HttpCodes"
+import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
 
 class AuthController {
-  public async signup (req: ICustomRequest, res: Response): Promise<Response> {
+  public async signup(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const user = await UserService.signup(req.body)
       return res.status(HttpCodes.CREATED).json(user)
@@ -13,7 +13,7 @@ class AuthController {
     }
   }
 
-  public async authenticate (req: ICustomRequest, res: Response): Promise<Response> {
+  public async authenticate(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const user = await UserService.authenticate(req.body)
       return res.status(HttpCodes.OK).json(user)
@@ -22,7 +22,7 @@ class AuthController {
     }
   }
 
-  public async forgotPassword (req: ICustomRequest, res: Response): Promise<Response> {
+  public async forgotPassword(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const { email } = req.body
 
@@ -34,11 +34,11 @@ class AuthController {
     }
   }
 
-  public async resetPassword (req: ICustomRequest, res: Response): Promise<Response> {
+  public async resetPassword(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       await UserService.resetPassword(req.body)
 
-      return res.status(HttpCodes.OK).json({ message: 'Senha alterada com sucesso!' })
+      return res.status(HttpCodes.OK).json({ message: "Senha alterada com sucesso!" })
     } catch (error) {
       return res.status(error.code).json(error)
     }

@@ -1,9 +1,9 @@
 class Util {
   public format (mask: string, value: string): string {
-    const s = '' + value
-    let r = ''
+    const s = "" + value
+    let r = ""
     for (let im = 0, is = 0; im < mask.length && is < s.length; im++) {
-      r += mask.charAt(im) === 'X' ? s.charAt(is++) : mask.charAt(im)
+      r += mask.charAt(im) === "X" ? s.charAt(is++) : mask.charAt(im)
     }
     return r
   }

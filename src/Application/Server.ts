@@ -1,19 +1,15 @@
-import App from './App'
-import LogService from '../Services/LogService'
-import IServerConfig from './Configs/Interfaces/IServerConfig'
+import DatabaseConnection from "../Database/DatabaseConnection"
+import LogService from "../Services/LogService"
+import IServerConfig from "./Configs/Interfaces/IServerConfig"
 
 export default class Server {
-  public config: IServerConfig
+  public constructor(private config: IServerConfig) { }
 
-  public constructor (config: IServerConfig) {
-    this.config = config
-  }
+  public run() {
+    DatabaseConnection.connect(this.config.databaseConnectionConfig).then(() => {
+      this.config.app.listen(this.config.port)
 
-  public run () {
-    App.listen(this.config.port)
-
-    LogService.clearLog('console')
-
-    LogService.logIntoConsole(`Server started at ${this.config.appUrl}:${this.config.port}/`)
+      LogService.logIntoConsole(`Server started at ${this.config.appUrl}:${this.config.port}/`)
+    })
   }
 }

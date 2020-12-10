@@ -1,11 +1,11 @@
-import { Response } from 'express'
+import { Response } from "express"
 
-import FileService from '../../../Services/FileService'
-import HttpCodes from '../HttpCodes'
-import ICustomRequest from '../../Configs/Interfaces/ICustomRequest'
+import FileService from "../../../Services/FileService"
+import HttpCodes from "../HttpCodes"
+import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
 
 class UploadFileController {
-  public async upload (req: ICustomRequest, res: Response): Promise<Response> {
+  public async upload(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const { originalname: name, size, filename: key } = req.file
 
@@ -18,7 +18,7 @@ class UploadFileController {
     }
   }
 
-  public async index (req: ICustomRequest, res: Response): Promise<Response> {
+  public async index(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const files = await FileService.getAll()
       return res.status(HttpCodes.OK).json(files)
@@ -27,7 +27,7 @@ class UploadFileController {
     }
   }
 
-  public async delete (req: ICustomRequest, res: Response): Promise<Response> {
+  public async delete(req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params
       await FileService.delete(id)

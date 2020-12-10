@@ -1,24 +1,25 @@
-import jwt from 'jsonwebtoken'
-import { Response, NextFunction } from 'express'
-import ICustomRequest from '../../Configs/Interfaces/ICustomRequest'
-import IDecodedJWT from '../../../Services/Resources/Interfaces/IDecodedJWT'
-import IMiddleware from '../../Configs/Interfaces/IMiddleware'
-import UnauthorizedException from '../HttpExceptions/UnauthorizedException'
+import jwt from "jsonwebtoken"
+import { Response, NextFunction } from "express"
+import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
+import IDecodedJWT from "../../../Services/Resources/Interfaces/IDecodedJWT"
+import { IApplicationMiddleware } from "../../Configs/Interfaces/IApplicationMiddleware"
+import UnauthorizedException from "../HttpExceptions/UnauthorizedException"
+import { Constants } from "../../../Constants"
 
-class AuthMiddleware implements IMiddleware {
-  public intercepter (req: ICustomRequest, res: Response, next: NextFunction): NextFunction | Response | void{
+class AuthMiddleware implements IApplicationMiddleware {
+  public intercepter(req: IApplicationRequest, res: Response, next: NextFunction): NextFunction | Response | void {
     try {
       const authHeader = req.headers.authorization
 
       if (!authHeader) {
-        throw new UnauthorizedException({ message: 'Token de autenticação não fornecido!' })
+        throw new UnauthorizedException(Constants.MessageErrors.auth.tokenNotProvided)
       }
 
-      const parts = authHeader.split(' ')
+      const parts = authHeader.split(" ")
       const isValid = parts.length === 2
 
       if (!isValid) {
-        throw new UnauthorizedException({ message: 'Token de autenticação inválido ou mal formatado!' })
+        throw new UnauthorizedException(Constants.MessageErrors.auth.invalidToken)
       }
 
       const [scheme, token] = parts
@@ -26,13 +27,15 @@ class AuthMiddleware implements IMiddleware {
       const test = pattern.test(scheme)
 
       if (!test) {
-        throw new UnauthorizedException({ message: 'Token de autenticação inválido ou mal formatado!' })
+        throw new UnauthorizedException(Constants.MessageErrors.auth.invalidToken)
       }
 
       jwt.verify(token, process.env.AUTH_SECRET, (err, decoded: IDecodedJWT): void => {
         if (err) {
-          throw new UnauthorizedException({ message: 'Token de autenticação inválido ou expirado!' })
+          throw new UnauthorizedException(Constants.MessageErrors.auth.expiredToken)
         }
+
+        console.log(decoded)
 
         req.userId = decoded.id
         next()

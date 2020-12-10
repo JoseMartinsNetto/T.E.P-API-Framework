@@ -1,6 +1,6 @@
-import SendGrid from '@sendgrid/mail'
-import IEmailRequest from './Resources/Interfaces/IEmailRequest'
-import BaseService from './BaseService'
+import SendGrid from "@sendgrid/mail"
+import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
+import BaseService from "./BaseService"
 
 class EmailService extends BaseService {
   public async sendMail (data: IEmailRequest): Promise<IEmailRequest> {

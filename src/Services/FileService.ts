@@ -1,10 +1,10 @@
-import fs from 'fs'
-import LogService from './LogService'
-import IFile from '../Domain/Interfaces/IFile'
-import File from '../Domain/Models/File'
-import IFileRequest from './Resources/Interfaces/Request/IFileRequest'
-import NotFoundException from '../Application/Http/HttpExceptions/NotFoundException'
-import BaseService from './BaseService'
+import fs from "fs"
+import LogService from "./LogService"
+import IFile from "../Domain/Interfaces/IFile"
+import File from "../Domain/Models/File"
+import IFileRequest from "./Resources/Interfaces/Request/IFileRequest"
+import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
+import BaseService from "./BaseService"
 
 class FileService extends BaseService {
   public saveFromUpload (fileRequest: IFileRequest): Promise<IFile> {
@@ -35,7 +35,7 @@ class FileService extends BaseService {
         const file = await File.findById(fileId)
 
         if (!file) {
-          throw new NotFoundException('Arquivo Não encontrado')
+          throw new NotFoundException("Arquivo Não encontrado")
         }
 
         await file.remove()

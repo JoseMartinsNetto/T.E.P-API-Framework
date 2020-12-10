@@ -1,10 +1,10 @@
-# T.E.M API Framework
+# T.E.P API Framework
 
-What TEM API Framework means ?
+What TEP API Framework means ?
 
 **T** = Typescript   
 **E** = Express    
-**M** = MongoDb    
+**P** = Postgresql    
 
 Is a backend project strongly based on DDD principles and .NET framework core.
 

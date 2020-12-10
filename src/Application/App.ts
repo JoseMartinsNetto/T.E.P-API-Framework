@@ -1,56 +1,42 @@
-import express, { Application } from 'express'
-import cors from 'cors'
-import routes from './Routes'
-import dotenv from 'dotenv'
-import morgan from 'morgan'
-import path from 'path'
-
-import DatabaseConnection from '../Database/DatabaseConnection'
-import LogService from '../Services/LogService'
-import HttpCodes from './Http/HttpCodes'
+import express, { Application } from "express"
+import cors from "cors"
+import routes from "./Routes"
+import morgan from "morgan"
+import path from "path"
 
 class App {
-    public express: Application
+  private useStaticFiles: boolean
 
-    private useStaticFiles: boolean
+  public constructor(public expressInstance: Application) {
+    this.useStaticFiles = process.env.USE_STATIC_FILES === "true"
 
-    public constructor () {
-      dotenv.config()
-      const USE_STATIC_FILES = process.env.USE_STATIC_FILES
+    this.middlewares()
+    this.routes()
+  }
 
-      this.useStaticFiles = USE_STATIC_FILES === 'true'
-      this.express = express()
+  private middlewares(): void {
+    this.expressInstance.use(express.json())
+    this.expressInstance.use(express.urlencoded({ extended: true }))
+    this.expressInstance.use(cors())
+    this.expressInstance.use(morgan("dev"))
 
-      this.middlewares()
-      this.routes()
-      // DatabaseConnection.connect()
-      //   .then((response): void => LogService.logIntoConsole(response))
+    if (this.useStaticFiles) {
+      this.expressInstance.use(express.static(path.join(__dirname, "..", "..", "public", "files")))
     }
+  }
 
-    private middlewares (): void {
-      this.express.use(express.json())
-      this.express.use(express.urlencoded())
-      this.express.use(cors())
-      this.express.use(morgan('dev'))
+  private routes(): void {
+    this.expressInstance.use(`${process.env.APP_PREFIX_URI}/`, (req, res) => {
+      return res.sendFile(path.join(__dirname, "..", "..", "public", "app/index.html"))
+    })
 
-      if (this.useStaticFiles) {
-        this.express.use(express.static(path.join(__dirname, '..', '..', 'public')))
-      }
-    }
+    this.expressInstance.use(`${process.env.ADMIN_PREFIX_URI}/`, (req, res) => {
+      return res.sendFile(path.join(__dirname, "..", "..", "public", "admin/index.html"))
+    })
 
-    private routes (): void {
-      this.express.use(`${process.env.API_PREFIX}/${process.env.API_CURRENT_VERSION}`, routes)
-      this.express.use(`${process.env.FRONT_PREFIX_URI}/*`, (req, res) => {
-        const USE_CLIENT_MODE = process.env.USE_CLIENT_MODE
-        const useClientMode = USE_CLIENT_MODE === 'true'
-
-        if (useClientMode) {
-          return res.sendFile(path.join(__dirname, '..', '..', 'public/index.html'))
-        }
-
-        return res.status(HttpCodes.NOT_FOUND).send()
-      })
-    }
+    this.expressInstance.use(`${process.env.API_PREFIX}/${process.env.API_CURRENT_VERSION}/status`, (req, res) => res.send({ status: "ok" }))
+    this.expressInstance.use(`${process.env.API_PREFIX}/${process.env.API_CURRENT_VERSION}`, routes)
+  }
 }
 
-export default new App().express
+export default new App(express())

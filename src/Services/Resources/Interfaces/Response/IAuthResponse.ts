@@ -1,4 +1,4 @@
-import IUser from '../../../../Domain/Interfaces/IUser'
+import IUser from "../../../../Domain/Interfaces/IUser"
 
 export default interface IAuthResponse {
     user: IUser

@@ -1,10 +1,10 @@
-import { Response } from 'express'
-import UserService from '../../../Services/UserService'
-import HttpCodes from '../HttpCodes'
-import ICustomRequest from '../../Configs/Interfaces/ICustomRequest'
+import { Response } from "express"
+import UserService from "../../../Services/UserService"
+import HttpCodes from "../HttpCodes"
+import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
 
 class UserController {
-  public async index (req: ICustomRequest, res: Response): Promise<Response> {
+  public async index (req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const users = await UserService.getUsers()
       return res.status(HttpCodes.OK).json(users)
@@ -13,7 +13,7 @@ class UserController {
     }
   }
 
-  public async store (req: ICustomRequest, res: Response): Promise<Response> {
+  public async store (req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const users = await UserService.createUser(req.body)
       return res.status(HttpCodes.OK).json(users)
@@ -22,7 +22,7 @@ class UserController {
     }
   }
 
-  public async edit (req: ICustomRequest, res: Response): Promise<Response> {
+  public async edit (req: IApplicationRequest, res: Response): Promise<Response> {
     try {
       const { id } = req.params
       const users = await UserService.editUser(id, req.body)

@@ -1,27 +1,28 @@
-import ISignupRequest from './Resources/Interfaces/Request/ISignupRequest'
-import IAuthRequest from './Resources/Interfaces/Request/IAuthRequest'
-import IAuthResponse from './Resources/Interfaces/Response/IAuthResponse'
-import IGenerateTokenParams from './Resources/Interfaces/IGenerateTokenParams'
-import IEmailRequest from './Resources/Interfaces/IEmailRequest'
-import IResetPasswordRequest from './Resources/Interfaces/Request/IResetPasswordRequest'
-import IUser from '../Domain/Interfaces/IUser'
+import ISignupRequest from "./Resources/Interfaces/Request/ISignupRequest"
+import IAuthRequest from "./Resources/Interfaces/Request/IAuthRequest"
+import IAuthResponse from "./Resources/Interfaces/Response/IAuthResponse"
+import IGenerateTokenParams from "./Resources/Interfaces/IGenerateTokenParams"
+import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
+import IResetPasswordRequest from "./Resources/Interfaces/Request/IResetPasswordRequest"
+import IUser from "../Domain/Interfaces/IUser"
 
-import bcryptjs from 'bcryptjs'
-import crypto from 'crypto'
-import jwt from 'jsonwebtoken'
-import EmailService from './EmailService'
-import User from '../Domain/Models/User'
-import BadRequestException from '../Application/Http/HttpExceptions/BadRequestException'
-import UnauthorizedException from '../Application/Http/HttpExceptions/UnauthorizedException'
-import NotFoundException from '../Application/Http/HttpExceptions/NotFoundException'
-import BaseService from './BaseService'
+import bcryptjs from "bcryptjs"
+import crypto from "crypto"
+import jwt from "jsonwebtoken"
+import EmailService from "./EmailService"
+import User from "../Domain/Models/User"
+import BadRequestException from "../Application/Http/HttpExceptions/BadRequestException"
+import UnauthorizedException from "../Application/Http/HttpExceptions/UnauthorizedException"
+import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
+import BaseService from "./BaseService"
+import { Constants } from "../Constants"
 
 class UserService extends BaseService {
-  private generateToken (params: IGenerateTokenParams): string {
+  private generateToken(params: IGenerateTokenParams): string {
     return jwt.sign(params, process.env.AUTH_SECRET, { expiresIn: process.env.TOKEN_EXPIRES })
   }
 
-  private userExists (userData: ISignupRequest): Promise<boolean> {
+  private userExists(userData: ISignupRequest): Promise<boolean> {
     return new Promise<boolean>(async (resolve, reject): Promise<void> => {
       try {
         const { username, email } = userData
@@ -45,18 +46,18 @@ class UserService extends BaseService {
     })
   }
 
-  public signup (userData: ISignupRequest): Promise<IAuthResponse> {
+  public signup(userData: ISignupRequest): Promise<IAuthResponse> {
     return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
       try {
         const { password } = userData
         const userExists = await this.userExists(userData)
 
         if (userExists) {
-          throw new BadRequestException('Usuário já existe na base de dados')
+          throw new BadRequestException(Constants.ErrorMessages.users.userExists)
         }
 
         if (!userData.userType) {
-          userData.userType = 'staff'
+          userData.userType = "staff"
         }
 
         const hash = await bcryptjs.hash(password, 10)
@@ -74,14 +75,14 @@ class UserService extends BaseService {
     })
   }
 
-  public createUser (userData: ISignupRequest): Promise<IUser[]> {
+  public createUser(userData: ISignupRequest): Promise<IUser[]> {
     return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
       try {
         const { password } = userData
         const userExists = await this.userExists(userData)
 
         if (userExists) {
-          throw new BadRequestException('Usuário já existe na base de dados')
+          throw new BadRequestException(Constants.ErrorMessages.users.userExists)
         }
 
         const hash = await bcryptjs.hash(password, 10)
@@ -100,7 +101,7 @@ class UserService extends BaseService {
     })
   }
 
-  public editUser (userId: string, userData: ISignupRequest): Promise<IUser[]> {
+  public editUser(userId: string, userData: ISignupRequest): Promise<IUser[]> {
     return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
       try {
         const user = await User.findById(userId)
@@ -118,24 +119,24 @@ class UserService extends BaseService {
     })
   }
 
-  public async authenticate (loginData: IAuthRequest): Promise<IAuthResponse> {
+  public async authenticate(loginData: IAuthRequest): Promise<IAuthResponse> {
     return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
       try {
         const { username, password } = loginData
 
-        let user = await User.findOne({ username }).select('+password')
+        let user = await User.findOne({ username }).select("+password")
 
         if (!user) {
-          user = await User.findOne({ email: username }).select('+password')
+          user = await User.findOne({ email: username }).select("+password")
           if (!user) {
-            throw new NotFoundException('Usuário não encontrado')
+            throw new NotFoundException("Usuário não encontrado")
           }
         }
 
         const isValid = await bcryptjs.compare(password, user.password)
 
         if (!isValid) {
-          throw new UnauthorizedException('Senha incorreta')
+          throw new UnauthorizedException("Senha incorreta")
         }
 
         const token = this.generateToken({ id: user._id })
@@ -149,16 +150,16 @@ class UserService extends BaseService {
     })
   }
 
-  public forgotPassword (email: string): Promise<IEmailRequest> {
+  public forgotPassword(email: string): Promise<IEmailRequest> {
     return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
       try {
         const user = await User.findOne({ email })
 
         if (!user) {
-          throw new NotFoundException('Usuário não encontrado')
+          throw new NotFoundException("Usuário não encontrado")
         }
 
-        const token = crypto.randomBytes(20).toString('hex')
+        const token = crypto.randomBytes(20).toString("hex")
 
         const now = new Date()
         now.setHours(now.getHours() + 1)
@@ -172,8 +173,8 @@ class UserService extends BaseService {
 
         const msg = await EmailService.sendMail({
           to: user.email,
-          from: '',
-          subject: 'Esqueceu Sua Senha?',
+          from: "",
+          subject: "Esqueceu Sua Senha?",
           html: `<p>Email de Recuperação de senha, clique no link abaixo para recuperar sua senha:</p>
           <p><a href="${msgUrl}">${msgUrl}</a></p>`
         })
@@ -184,24 +185,24 @@ class UserService extends BaseService {
     })
   }
 
-  public resetPassword (data: IResetPasswordRequest): Promise<void> {
+  public resetPassword(data: IResetPasswordRequest): Promise<void> {
     return new Promise<void>(async (resolve, reject): Promise<void> => {
       try {
         const { email, password, token } = data
-        const user = await User.findOne({ email }).select('+passwordResetToken passwordResetExpires email')
+        const user = await User.findOne({ email }).select("+passwordResetToken passwordResetExpires email")
 
         if (!user) {
-          throw new NotFoundException('Usuário não encontrado')
+          throw new NotFoundException("Usuário não encontrado")
         }
 
         if (token !== user.passwordResetToken) {
-          throw new BadRequestException('Token de verificação inválido')
+          throw new BadRequestException("Token de verificação inválido")
         }
 
         const now = new Date()
 
         if (now > user.passwordResetExpires) {
-          throw new BadRequestException('Token de verificação expirado! Gere um novo!')
+          throw new BadRequestException("Token de verificação expirado! Gere um novo!")
         }
 
         const newPassword = await bcryptjs.hash(password, 10)
@@ -215,8 +216,8 @@ class UserService extends BaseService {
     })
   }
 
-  public getUsers (): Promise<IUser[]> {
-    return new Promise<IUser[]>(async (resolve, reject) : Promise<void> => {
+  public getUsers(): Promise<IUser[]> {
+    return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
       try {
         const users = await User.find()
         return resolve(users)
@@ -226,8 +227,8 @@ class UserService extends BaseService {
     })
   }
 
-  public getUser (userId: string): Promise<IUser> {
-    return new Promise<IUser>(async (resolve, reject) : Promise<void> => {
+  public getUser(userId: string): Promise<IUser> {
+    return new Promise<IUser>(async (resolve, reject): Promise<void> => {
       try {
         const user = await User.findById(userId)
         return resolve(user)

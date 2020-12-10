@@ -1,15 +1,8 @@
-import mongoose from 'mongoose'
+import { ConnectionOptions, createConnection } from "typeorm"
 
 class DatabaseConnection {
-  public async connect (): Promise<string> {
-    try {
-      await mongoose.connect(process.env.STRING_CONNECTION, {
-        useNewUrlParser: true
-      })
-      return `MongoBd '${process.env.MONGODB_DATABASE_NAME}' database connected!`
-    } catch (error) {
-      return `Error while trying to connect a database -> ${error}`
-    }
+  public async connect(options: ConnectionOptions) {
+    return createConnection(options)
   }
 }
 

@@ -1,15 +1,15 @@
-import multer, { Options } from 'multer'
-import { RequestHandler } from 'express'
-import multerConfig from '../../Configs/multerConfig'
-import IMiddleware from '../../Configs/Interfaces/IMiddleware'
+import multer, { Options } from "multer"
+import { RequestHandler } from "express"
+import multerConfig from "../../Configs/multerConfig"
+import { IApplicationMiddleware } from "../../Configs/Interfaces/IApplicationMiddleware"
 
-class UploadFileMiddleware implements IMiddleware {
+class UploadFileMiddleware implements IApplicationMiddleware {
     public intercepter: RequestHandler;
     private config: Options;
 
     public constructor (config: Options) {
       this.config = config
-      this.intercepter = multer(this.config).single('file')
+      this.intercepter = multer(this.config).single("file")
     }
 }
 
