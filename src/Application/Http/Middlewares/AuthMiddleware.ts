@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
 import { Response, NextFunction } from "express"
 import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
-import IDecodedJWT from "../../../Services/Resources/Interfaces/IDecodedJWT"
+import {IDecodedJWT, IDecodedObject} from "../../../Services/Resources/Interfaces/IDecodedJWT"
 import { IApplicationMiddleware } from "../../Configs/Interfaces/IApplicationMiddleware"
 import UnauthorizedException from "../HttpExceptions/UnauthorizedException"
 import { Constants } from "../../../Constants"
@@ -12,14 +12,14 @@ class AuthMiddleware implements IApplicationMiddleware {
       const authHeader = req.headers.authorization
 
       if (!authHeader) {
-        throw new UnauthorizedException(Constants.MessageErrors.auth.tokenNotProvided)
+        throw new UnauthorizedException(Constants.ErrorMessages.auth.tokenNotProvided)
       }
 
       const parts = authHeader.split(" ")
       const isValid = parts.length === 2
 
       if (!isValid) {
-        throw new UnauthorizedException(Constants.MessageErrors.auth.invalidToken)
+        throw new UnauthorizedException(Constants.ErrorMessages.auth.invalidToken)
       }
 
       const [scheme, token] = parts
@@ -27,19 +27,22 @@ class AuthMiddleware implements IApplicationMiddleware {
       const test = pattern.test(scheme)
 
       if (!test) {
-        throw new UnauthorizedException(Constants.MessageErrors.auth.invalidToken)
+        throw new UnauthorizedException(Constants.ErrorMessages.auth.invalidToken)
       }
 
-      jwt.verify(token, process.env.AUTH_SECRET, (err, decoded: IDecodedJWT): void => {
+      jwt.verify(token, String(process.env.AUTH_SECRET), (err, decoded: IDecodedJWT): void => {
         if (err) {
-          throw new UnauthorizedException(Constants.MessageErrors.auth.expiredToken)
+          throw new UnauthorizedException(Constants.ErrorMessages.auth.expiredToken)
         }
 
-        console.log(decoded)
+        const decodedObject = decoded as IDecodedObject
 
-        req.userId = decoded.id
+        req.userId = decodedObject.id
         next()
       })
+
+      jwt.verify(token, String(process.env.AUTH_SECRET), (err, decoded): void => { })
+
     } catch (error) {
       return res.status(error.code).json(error)
     }

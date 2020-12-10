@@ -5,5 +5,5 @@ export default interface IServerConfig {
   app: Application
   port: string | number
   appUrl: string
-  databaseConnectionConfig: ConnectionOptions
+  databaseConnectionConfig?: ConnectionOptions
 }

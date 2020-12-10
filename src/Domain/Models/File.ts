@@ -1,20 +1,18 @@
-import { Schema, model } from "mongoose"
-import IFile from "../Interfaces/IFile"
-import { promisify } from "util"
-import fs from "fs"
-import path from "path"
+import { Column, Entity } from "typeorm"
+import { BaseModel } from "../Base"
 
-const FileSchema = new Schema<IFile>({
-  name: String,
-  size: String,
-  key: String,
-  url: String
-}, {
-  timestamps: true
-})
+@Entity()
+export class File extends BaseModel {
 
-FileSchema.pre<IFile>("remove", function (): Promise<void> {
-  return promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "..", "public", "files", this.key))
-})
+  @Column()
+  public name: string
 
-export default model<IFile>("File", FileSchema)
+  @Column()
+  public size: number
+
+  @Column()
+  public key: string
+
+  @Column()
+  public url: string
+}

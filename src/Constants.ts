@@ -7,6 +7,10 @@ const ErrorMessages = {
   users: {
     userExists: "Usuário já cadastrado.",
     userNotFound: "Usuário não encontrado."
+  },
+  files: {
+    notfound: "Arquivo Não encontrado.",
+    invalidType: "Tipo de arquivo inválido."
   }
 }
 

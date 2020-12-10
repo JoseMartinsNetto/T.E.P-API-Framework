@@ -5,13 +5,17 @@ import morgan from "morgan"
 import path from "path"
 
 import dotenv from "dotenv"
+import LogService from "../Services/LogService"
 dotenv.config()
 
 class App {
   private useStaticFiles: boolean
+  private enviroment: string
 
   public constructor(public expressInstance: Application) {
+    LogService.clearLog("console")
     this.useStaticFiles = process.env.USE_STATIC_FILES === "true"
+    this.enviroment = String(process.env.ENVIROMENT)
 
     this.middlewares()
     this.routes()
@@ -21,7 +25,10 @@ class App {
     this.expressInstance.use(express.json())
     this.expressInstance.use(express.urlencoded({ extended: true }))
     this.expressInstance.use(cors())
-    this.expressInstance.use(morgan("dev"))
+
+    if (this.enviroment == "development") {
+      // this.expressInstance.use(morgan("dev"))
+    }
 
     if (this.useStaticFiles) {
       this.expressInstance.use(express.static(path.join(__dirname, "..", "..", "public", "files")))
@@ -29,7 +36,6 @@ class App {
   }
 
   private routes(): void {
-    console.log(process.env.APP_PREFIX_URI)
     this.expressInstance.use(`${process.env.APP_PREFIX_URI}/`, (req, res) => {
       return res.sendFile(path.join(__dirname, "..", "..", "public", "app/index.html"))
     })

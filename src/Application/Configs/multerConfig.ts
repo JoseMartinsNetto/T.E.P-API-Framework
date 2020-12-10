@@ -1,3 +1,4 @@
+import { Constants } from './../../Constants';
 import multer, { Options } from "multer"
 import path from "path"
 import crypto from "crypto"
@@ -8,9 +9,9 @@ const multerConfig: Options = {
     destination: (req, file, cb): void => {
       cb(null, path.resolve(__dirname, "..", "..", "..", "public", "files"))
     },
-    filename: (req, file, cb): void => {
+    filename: (req, file, cb: (error: Error | null, destination: string) => void): void => {
       crypto.randomBytes(16, (err, hash): void => {
-        if (err) cb(err, null)
+        if (err) cb(err, "")
 
         const fileName = `${hash.toString("hex")}-${file.originalname}`
         cb(null, fileName)
@@ -31,7 +32,7 @@ const multerConfig: Options = {
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true)
     } else {
-      cb(new Error("Invalid file type."), null)
+      cb(new Error(Constants.ErrorMessages.files.invalidType))
     }
   }
 }

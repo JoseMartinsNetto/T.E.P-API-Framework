@@ -1,44 +1,33 @@
-import { Schema, model } from "mongoose"
-import IUser from "../Interfaces/IUser"
+import { Column, Entity } from "typeorm";
+import { BaseModel } from "../Base";
 
-const UserSchema = new Schema({
-  name: {
-    type: String
-  },
-  username: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  phone: {
-    type: String
-  },
-  cellPhone: {
-    type: String
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false
-  },
-  userType: {
-    type: String,
-    required: true
-  },
-  passwordResetToken: {
-    type: String,
-    select: false
-  },
-  passwordResetExpires: {
-    type: Date,
-    select: false
-  }
-},
-{
-  timestamps: true
-})
+@Entity()
+export class User extends BaseModel {
 
-export default model<IUser>("User", UserSchema)
+  @Column()
+  public name: string;
+
+  @Column()
+  public username: string;
+
+  @Column()
+  public email: string;
+
+  @Column()
+  public phone: string;
+
+  @Column()
+  public userType: string;
+
+  @Column()
+  public cellPhone?: string;
+
+  @Column()
+  public password: string;
+
+  @Column()
+  public passwordResetToken?: string;
+
+  @Column()
+  public passwordResetExpires?: Date;
+}
