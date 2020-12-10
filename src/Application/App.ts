@@ -4,6 +4,9 @@ import routes from "./Routes"
 import morgan from "morgan"
 import path from "path"
 
+import dotenv from "dotenv"
+dotenv.config()
+
 class App {
   private useStaticFiles: boolean
 
@@ -26,6 +29,7 @@ class App {
   }
 
   private routes(): void {
+    console.log(process.env.APP_PREFIX_URI)
     this.expressInstance.use(`${process.env.APP_PREFIX_URI}/`, (req, res) => {
       return res.sendFile(path.join(__dirname, "..", "..", "public", "app/index.html"))
     })

@@ -2,7 +2,7 @@
 import BaseService from "./BaseService"
 
 class LogService extends BaseService {
-  public logIntoConsole (content: any, obj?: any): void {
+  public logIntoConsole(content: any, obj?: any): void {
     if (obj) {
       console.log(content, obj)
       console.log()
@@ -12,7 +12,7 @@ class LogService extends BaseService {
     console.log()
   }
 
-  public clearLog (where: string): void {
+  public clearLog(where: "console" | "all"): void {
     if (where === "console") {
       console.clear()
     }

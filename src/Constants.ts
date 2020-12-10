@@ -10,7 +10,11 @@ const ErrorMessages = {
   }
 }
 
-const SuccessMessages = {}
+const SuccessMessages = {
+  application: {
+    successRun: (appUrl: string, port: string | number) => `Server started at ${appUrl}:${port}/`
+  }
+}
 
 export const Constants = {
   ErrorMessages,
