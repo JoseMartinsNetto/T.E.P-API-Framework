@@ -1,18 +1,26 @@
 import SendGrid from "@sendgrid/mail"
 import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
-import BaseService from "./BaseService"
+import { BaseService } from "./BaseService"
 
-class EmailService extends BaseService {
+export class EmailService extends BaseService {
+  constructor(public sendGrid: typeof SendGrid) {
+    super()
+  }
+
+  static instance() {
+    return new EmailService(SendGrid)
+  }
+
   public async sendMail(data: IEmailRequest): Promise<IEmailRequest> {
     return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
       try {
-        SendGrid.setApiKey(String(process.env.SENDGRID_API_KEY))
+        this.sendGrid.setApiKey(String(process.env.SENDGRID_API_KEY))
 
         if (!data.from) {
           data.from = String(process.env.DEFAULT_EMAIL_SENDER)
         }
 
-        await SendGrid.send(data)
+        await this.sendGrid.send(data)
         return resolve(data)
       } catch (error) {
         return reject(this.handleError(error))
@@ -20,5 +28,3 @@ class EmailService extends BaseService {
     })
   }
 }
-
-export default new EmailService()

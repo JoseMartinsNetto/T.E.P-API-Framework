@@ -1,3 +1,3 @@
 export default interface IGenerateTokenParams {
-    id: string
+    id: number
 }

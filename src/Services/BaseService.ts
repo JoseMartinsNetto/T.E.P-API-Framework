@@ -1,7 +1,7 @@
 import InternalServerErrorException from "../Application/Http/HttpExceptions/InternalServerErrorException"
 import HttpExceptionBase from "../Application/Http/HttpExceptions/HttpExceptionBase"
 
-export default class BaseService {
+export abstract class BaseService {
   public handleError(error: any) {
     if (error instanceof HttpExceptionBase) {
       return error

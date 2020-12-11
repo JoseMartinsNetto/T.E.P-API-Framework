@@ -1,242 +1,239 @@
-// import ISignupRequest from "./Resources/Interfaces/Request/ISignupRequest"
-// import IAuthRequest from "./Resources/Interfaces/Request/IAuthRequest"
-// import IAuthResponse from "./Resources/Interfaces/Response/IAuthResponse"
-// import IGenerateTokenParams from "./Resources/Interfaces/IGenerateTokenParams"
-// import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
-// import IResetPasswordRequest from "./Resources/Interfaces/Request/IResetPasswordRequest"
-// import IUser from "../Domain/Interfaces/IUser"
+import ISignupRequest from "./Resources/Interfaces/Request/ISignupRequest"
+import IAuthRequest from "./Resources/Interfaces/Request/IAuthRequest"
+import IGenerateTokenParams from "./Resources/Interfaces/IGenerateTokenParams"
+import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
+import IResetPasswordRequest from "./Resources/Interfaces/Request/IResetPasswordRequest"
 
-// import bcryptjs from "bcryptjs"
-// import crypto from "crypto"
-// import jwt from "jsonwebtoken"
-// import EmailService from "./EmailService"
-// import User from "../Domain/Models/User"
-// import BadRequestException from "../Application/Http/HttpExceptions/BadRequestException"
-// import UnauthorizedException from "../Application/Http/HttpExceptions/UnauthorizedException"
-// import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
-// import BaseService from "./BaseService"
-// import { Constants } from "../Constants"
+import bcryptjs from "bcryptjs"
+import crypto from "crypto"
+import jwt from "jsonwebtoken"
+import { EmailService } from "./EmailService"
+import { User } from "../Domain/Models/User"
+import BadRequestException from "../Application/Http/HttpExceptions/BadRequestException"
+import UnauthorizedException from "../Application/Http/HttpExceptions/UnauthorizedException"
+import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
+import { BaseService } from "./BaseService"
+import { Constants } from "../Constants"
+import { getRepository, Repository } from "typeorm"
+import IAuthResponse from "./Resources/Interfaces/Response/IAuthResponse"
 
-// class UserService extends BaseService {
-//   private generateToken(params: IGenerateTokenParams): string {
-//     return jwt.sign(params, String(process.env.AUTH_SECRET), { expiresIn: process.env.TOKEN_EXPIRES })
-//   }
+export class UserService extends BaseService {
+  constructor(private repository: Repository<User>, public emailService: EmailService) {
+    super()
+  }
 
-//   private userExists(userData: ISignupRequest): Promise<boolean> {
-//     return new Promise<boolean>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const { username, email } = userData
+  static instance() {
+    return new UserService(getRepository(User), EmailService.instance())
+  }
 
-//         let user = await User.findOne({ email })
+  private generateToken(params: IGenerateTokenParams): string {
+    return jwt.sign(params, String(process.env.AUTH_SECRET), { expiresIn: process.env.TOKEN_EXPIRES })
+  }
 
-//         if (!user) {
-//           user = await User.findOne({ username })
+  private userExists(userData: ISignupRequest): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject): Promise<void> => {
+      try {
+        const { email } = userData
 
-//           if (!user) {
-//             return resolve(false)
-//           }
+        let user = await this.repository.findOne({ where: { email } })
 
-//           return resolve(true)
-//         }
+        if (user) {
+          return resolve(true)
+        }
 
-//         return resolve(true)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+        return resolve(false)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//   public signup(userData: ISignupRequest): Promise<IAuthResponse> {
-//     return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const { password } = userData
-//         const userExists = await this.userExists(userData)
+  public signup(userData: ISignupRequest): Promise<IAuthResponse> {
+    return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
+      try {
+        const { password } = userData
+        const userExists = await this.userExists(userData)
 
-//         if (userExists) {
-//           throw new BadRequestException(Constants.ErrorMessages.users.userExists)
-//         }
+        if (userExists) {
+          throw new BadRequestException(Constants.ErrorMessages.users.userExists)
+        }
 
-//         if (!userData.userType) {
-//           userData.userType = "staff"
-//         }
+        if (!userData.userType) {
+          userData.userType = "staff"
+        }
 
-//         const hash = await bcryptjs.hash(password, 10)
-//         userData.password = hash
+        const hash = await bcryptjs.hash(password, 10)
+        userData.password = hash
 
-//         const user = await User.create(userData)
-//         const token = this.generateToken({ id: user._id })
+        const user = this.repository.create(userData)
+        const token = this.generateToken({ id: user.id })
 
-//         user.password = undefined
+        user.password = undefined
 
-//         return resolve({ user, token })
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+        return resolve({ user, token })
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//   public createUser(userData: ISignupRequest): Promise<IUser[]> {
-//     return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const { password } = userData
-//         const userExists = await this.userExists(userData)
+  public createUser(userData: ISignupRequest): Promise<User[]> {
+    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+      try {
+        const { password } = userData
+        const userExists = await this.userExists(userData)
 
-//         if (userExists) {
-//           throw new BadRequestException(Constants.ErrorMessages.users.userExists)
-//         }
+        if (userExists) {
+          throw new BadRequestException(Constants.ErrorMessages.users.userExists)
+        }
 
-//         const hash = await bcryptjs.hash(password, 10)
-//         userData.password = hash
+        const hash = await bcryptjs.hash(password, 10)
+        userData.password = hash
 
-//         const user = await User.create(userData)
+        const user = this.repository.create(userData)
 
-//         user.password = undefined
+        user.password = undefined
 
-//         const users = await this.getUsers()
+        const users = await this.getUsers()
 
-//         return resolve(users)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+        return resolve(users)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//   public editUser(userId: string, userData: ISignupRequest): Promise<IUser[]> {
-//     return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const user = await User.findById(userId)
+  public editUser(userId: number, userData: ISignupRequest): Promise<User[]> {
+    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+      try {
+        const user = await this.repository.findOne(userId)
 
-//         await user.save()
+        await this.repository.update(userId, userData)
 
-//         await User.findOneAndUpdate({ _id: userId }, userData)
+        const users = await this.getUsers()
 
-//         const users = await this.getUsers()
+        return resolve(users)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//         return resolve(users)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+  public async authenticate(loginData: IAuthRequest): Promise<IAuthResponse> {
+    return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
+      try {
+        const { email, password } = loginData
 
-//   public async authenticate(loginData: IAuthRequest): Promise<IAuthResponse> {
-//     return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const { username, password } = loginData
+        let user = await this.repository.findOne({ where: { email } })
 
-//         let user = await User.findOne({ username }).select("+password")
+        if (!user) {
+          throw new NotFoundException(Constants.ErrorMessages.users.userNotFound)
+        }
 
-//         if (!user) {
-//           user = await User.findOne({ email: username }).select("+password")
-//           if (!user) {
-//             throw new NotFoundException("Usuário não encontrado")
-//           }
-//         }
+        const isValid = await bcryptjs.compare(password, user.password)
 
-//         const isValid = await bcryptjs.compare(password, user.password)
+        if (!isValid) {
+          throw new UnauthorizedException(Constants.ErrorMessages.auth.invalidPassword)
+        }
 
-//         if (!isValid) {
-//           throw new UnauthorizedException("Senha incorreta")
-//         }
+        const token = this.generateToken({ id: user.id })
 
-//         const token = this.generateToken({ id: user._id })
+        user.password = undefined
 
-//         user.password = undefined
+        return resolve({ user, token })
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//         return resolve({ user, token })
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+  public forgotPassword(email: string): Promise<IEmailRequest> {
+    return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
+      try {
+        const user = await this.repository.findOne({ where: { email } })
 
-//   public forgotPassword(email: string): Promise<IEmailRequest> {
-//     return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const user = await User.findOne({ email })
+        if (!user) {
+          throw new NotFoundException(Constants.ErrorMessages.users.userNotFound)
+        }
 
-//         if (!user) {
-//           throw new NotFoundException("Usuário não encontrado")
-//         }
+        const token = crypto.randomBytes(20).toString("hex")
 
-//         const token = crypto.randomBytes(20).toString("hex")
+        const now = new Date()
+        now.setHours(now.getHours() + 1)
 
-//         const now = new Date()
-//         now.setHours(now.getHours() + 1)
+        user.passwordResetToken = token
+        user.passwordResetExpires = now
 
-//         user.passwordResetToken = token
-//         user.passwordResetExpires = now
+        await this.repository.update(user.id, user)
 
-//         await user.save()
+        const msgUrl = `${process.env.FRONT_URL}/reset-password/token/${encodeURIComponent(token)}/email/${encodeURIComponent(user.email)}`
 
-//         const msgUrl = `${process.env.FRONT_URL}/reset-password/token/${encodeURIComponent(token)}/email/${encodeURIComponent(user.email)}`
+        const msg = await this.emailService.sendMail({
+          to: user.email,
+          from: "",
+          subject: "Esqueceu Sua Senha?",
+          html: `<p>Email de Recuperação de senha, clique no link abaixo para recuperar sua senha:</p>
+          <p><a href="${msgUrl}">${msgUrl}</a></p>`
+        })
+        return resolve(msg)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//         const msg = await EmailService.sendMail({
-//           to: user.email,
-//           from: "",
-//           subject: "Esqueceu Sua Senha?",
-//           html: `<p>Email de Recuperação de senha, clique no link abaixo para recuperar sua senha:</p>
-//           <p><a href="${msgUrl}">${msgUrl}</a></p>`
-//         })
-//         return resolve(msg)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+  public resetPassword(data: IResetPasswordRequest): Promise<void> {
+    return new Promise<void>(async (resolve, reject): Promise<void> => {
+      try {
+        const { email, password, token } = data
+        const user = await this.repository.findOne({ where: { email } })
 
-//   public resetPassword(data: IResetPasswordRequest): Promise<void> {
-//     return new Promise<void>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const { email, password, token } = data
-//         const user = await User.findOne({ email }).select("+passwordResetToken passwordResetExpires email")
+        if (!user) {
+          throw new NotFoundException(Constants.ErrorMessages.users.userNotFound)
+        }
 
-//         if (!user) {
-//           throw new NotFoundException("Usuário não encontrado")
-//         }
+        if (token !== user.passwordResetToken) {
+          throw new BadRequestException(Constants.ErrorMessages.auth.invalidResetToken)
+        }
 
-//         if (token !== user.passwordResetToken) {
-//           throw new BadRequestException("Token de verificação inválido")
-//         }
+        const now = new Date()
 
-//         const now = new Date()
+        if (now > user.passwordResetExpires) {
+          throw new BadRequestException(Constants.ErrorMessages.auth.invalidResetToken)
+        }
 
-//         if (now > user.passwordResetExpires) {
-//           throw new BadRequestException("Token de verificação expirado! Gere um novo!")
-//         }
+        const newPassword = await bcryptjs.hash(password, 10)
 
-//         const newPassword = await bcryptjs.hash(password, 10)
+        user.password = newPassword
 
-//         user.password = newPassword
-//         await user.save()
-//         return resolve()
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+        this.repository.update(user.id, user)
 
-//   public getUsers(): Promise<IUser[]> {
-//     return new Promise<IUser[]>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const users = await User.find()
-//         return resolve(users)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+        return resolve()
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//   public getUser(userId: string): Promise<IUser> {
-//     return new Promise<IUser>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const user = await User.findById(userId)
-//         return resolve(user)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
-// }
+  public getUsers(): Promise<User[]> {
+    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+      try {
+        const users = await this.repository.find()
+        return resolve(users)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-// export default new UserService()
+  public getUser(id: number): Promise<User> {
+    return new Promise<User>(async (resolve, reject): Promise<void> => {
+      try {
+        const user = await this.repository.findOne({ where: { id } })
+        return resolve(user)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
+}

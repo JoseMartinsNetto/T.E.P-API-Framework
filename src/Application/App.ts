@@ -5,7 +5,7 @@ import morgan from "morgan"
 import path from "path"
 
 import dotenv from "dotenv"
-import LogService from "../Services/LogService"
+import { LogService } from "../Services/LogService"
 dotenv.config()
 
 class App {

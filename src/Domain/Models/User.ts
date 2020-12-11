@@ -8,9 +8,6 @@ export class User extends BaseModel {
   public name: string;
 
   @Column()
-  public username: string;
-
-  @Column()
   public email: string;
 
   @Column()

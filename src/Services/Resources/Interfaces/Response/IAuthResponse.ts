@@ -1,6 +1,6 @@
-// import IUser from "../../../../Domain/Interfaces/IUser"
+import { User } from "../../../../Domain/Models/User";
 
-// export default interface IAuthResponse {
-//     user: IUser
-//     token: string
-// }
+export default interface IAuthResponse {
+  user: User
+  token: string
+}

@@ -1,9 +1,5 @@
-// export default interface IDecodedJWT{
-//     id: string
-// }
-
 export interface IDecodedObject {
-    id: string
+    id: number
 }
 
 export type IDecodedJWT = object | IDecodedObject | undefined

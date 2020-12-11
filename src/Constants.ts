@@ -2,7 +2,9 @@ const ErrorMessages = {
   auth: {
     tokenNotProvided: "Token de autenticação não fornecido!",
     invalidToken: "Token de autenticação inválido ou mal formatado!",
-    expiredToken: "Token de autenticação inválido ou expirado!"
+    invalidResetToken: "Token de verificação inválido",
+    expiredToken: "Token de autenticação inválido ou expirado!",
+    invalidPassword: "Email ou senha incorretos."
   },
   users: {
     userExists: "Usuário já cadastrado.",

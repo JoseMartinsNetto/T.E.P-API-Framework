@@ -1,7 +1,7 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
 import { Constants } from "../Constants"
 import PostgresConnector from "../Database/PostgresConnector"
-import LogService from "../Services/LogService"
+import { LogService } from "../Services/LogService"
 import IServerConfig from "./Configs/Interfaces/IServerConfig"
 
 export default class Server {

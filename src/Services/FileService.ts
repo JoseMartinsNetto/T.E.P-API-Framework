@@ -1,68 +1,75 @@
-// import { Constants } from "./../Constants"
-// import fs from "fs"
-// import LogService from "./LogService"
-// import IFile from "../Domain/Interfaces/IFile"
-// import File from "../Domain/Models/File"
-// import IFileRequest from "./Resources/Interfaces/Request/IFileRequest"
-// import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
-// import BaseService from "./BaseService"
+import { Constants } from "./../Constants"
+import fs from "fs"
+import LogService from "./LogService"
+import { File } from "../Domain/Models/File"
+import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
+import { BaseService } from "./BaseService"
+import IFileRequest from "./Resources/Interfaces/Request/IFileRequest"
+import { getRepository, Repository } from "typeorm"
 
-// class FileService extends BaseService {
-//   public saveFromUpload(fileRequest: IFileRequest): Promise<IFile> {
-//     return new Promise<IFile>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const file = await File.create(fileRequest)
-//         return resolve(file)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+export class FileService extends BaseService {
 
-//   public getAll(): Promise<IFile[]> {
-//     return new Promise<IFile[]>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const files = await File.find()
-//         return resolve(files)
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+  constructor(private repository: Repository<File>) {
+    super()
+  }
 
-//   public async delete(fileId: string): Promise<void> {
-//     return new Promise<void>(async (resolve, reject): Promise<void> => {
-//       try {
-//         const file = await File.findById(fileId)
+  static instance() {
+    return new FileService(getRepository(File))
+  }
 
-//         if (!file) {
-//           throw new NotFoundException(Constants.ErrorMessages.files.notfound)
-//         }
+  public saveFromUpload(fileRequest: IFileRequest): Promise<File> {
+    return new Promise<File>(async (resolve, reject): Promise<void> => {
+      try {
+        const file = this.repository.create(fileRequest)
+        return resolve(file)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//         await file.remove()
+  public getAll(): Promise<File[]> {
+    return new Promise<File[]>(async (resolve, reject): Promise<void> => {
+      try {
+        const files = await this.repository.find()
+        return resolve(files)
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-//         return resolve()
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
+  public async delete(id: number): Promise<void> {
+    return new Promise<void>(async (resolve, reject): Promise<void> => {
+      try {
+        const file = await this.repository.findOne({ where: { id } })
 
-//   public saveStringIntoFile(path: string, content: string): Promise<void> {
-//     return new Promise((resolve, reject): void => {
-//       try {
-//         fs.writeFile(path, content, function (err): void {
-//           if (err) return reject(err)
+        if (!file) {
+          throw new NotFoundException(Constants.ErrorMessages.files.notfound)
+        }
 
-//           LogService.logIntoConsole(`THE FILE ${path} WAS SAVED!`)
+        await this.repository.delete(id)
 
-//           return resolve()
-//         })
-//       } catch (error) {
-//         return reject(this.handleError(error))
-//       }
-//     })
-//   }
-// }
+        return resolve()
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
 
-// export default new FileService()
+  public saveStringIntoFile(path: string, content: string): Promise<void> {
+    return new Promise((resolve, reject): void => {
+      try {
+        fs.writeFile(path, content, function (err): void {
+          if (err) return reject(err)
+
+          LogService.logIntoConsole(`THE FILE ${path} WAS SAVED!`)
+
+          return resolve()
+        })
+      } catch (error) {
+        return reject(this.handleError(error))
+      }
+    })
+  }
+}

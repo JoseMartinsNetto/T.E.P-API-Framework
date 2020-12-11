@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BaseService from "./BaseService"
+import { BaseService } from "./BaseService"
 
-class LogService extends BaseService {
-  public logIntoConsole(content: any, obj?: any): void {
+export class LogService extends BaseService {
+  public static logIntoConsole(content: any, obj?: any): void {
     if (obj) {
       console.log(content, obj)
       console.log()
@@ -12,11 +12,9 @@ class LogService extends BaseService {
     console.log()
   }
 
-  public clearLog(where: "console" | "all"): void {
+  public static clearLog(where: "console" | "all"): void {
     if (where === "console") {
       console.clear()
     }
   }
 }
-
-export default new LogService()
