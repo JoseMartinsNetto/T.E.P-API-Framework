@@ -1,6 +1,6 @@
 import { Constants } from "./../Constants"
 import fs from "fs"
-import LogService from "./LogService"
+import { LogService } from "./LogService"
 import { File } from "../Domain/Models/File"
 import NotFoundException from "../Application/Http/HttpExceptions/NotFoundException"
 import { BaseService } from "./BaseService"
