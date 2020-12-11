@@ -3,7 +3,6 @@ import cors from "cors"
 import path from "path"
 
 import dotenv from "dotenv"
-import { LogService } from "../Services/LogService"
 dotenv.config()
 
 export class App {
@@ -11,8 +10,6 @@ export class App {
   private enviroment: string
 
   public constructor(public expressInstance: Application, private routes: Router) {
-
-    // LogService.clearLog("console")
     this.useStaticFiles = process.env.USE_STATIC_FILES === "true"
     this.enviroment = String(process.env.ENVIROMENT)
 

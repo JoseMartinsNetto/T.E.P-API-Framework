@@ -11,6 +11,7 @@ export default class Server {
   public constructor(private config: IServerConfig) { }
 
   public async run() {
+    LogService.clearLog("console")
     const connectionOptions = this.config.databaseConnectionConfig as PostgresConnectionOptions
     await PostgresConnector.connect(connectionOptions)
 
