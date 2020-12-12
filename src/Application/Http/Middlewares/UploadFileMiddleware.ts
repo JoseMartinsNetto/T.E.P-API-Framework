@@ -1,16 +1,16 @@
-import multer, { Options } from "multer"
+import Multer, { Options } from "multer"
 import { RequestHandler } from "express"
-import multerConfig from "../../Configs/multerConfig"
 import { IApplicationMiddleware } from "../../Configs/Interfaces/IApplicationMiddleware"
+import multerConfig from "../../Configs/multerConfig";
 
-class UploadFileMiddleware implements IApplicationMiddleware {
-    public intercepter: RequestHandler;
-    private config: Options;
+export class UploadFileMiddleware implements IApplicationMiddleware {
+  public intercepter: RequestHandler;
 
-    public constructor (config: Options) {
-      this.config = config
-      this.intercepter = multer(this.config).single("file")
-    }
+  static instance() {
+    return new UploadFileMiddleware(Multer, multerConfig)
+  }
+
+  public constructor(private multer: typeof Multer, private config: Options) {
+    this.intercepter = this.multer(this.config).single("file")
+  }
 }
-
-export default new UploadFileMiddleware(multerConfig).intercepter

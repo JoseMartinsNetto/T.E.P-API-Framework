@@ -17,8 +17,8 @@ export class FileService extends BaseService {
     return new FileService(getRepository(File))
   }
 
-  public saveFromUpload(fileRequest: IFileRequest): Promise<File> {
-    return new Promise<File>(async (resolve, reject): Promise<void> => {
+  public saveFromUpload(fileRequest: IFileRequest) {
+    return new Promise<File>(async (resolve, reject) => {
       try {
         const file = this.repository.create(fileRequest)
         return resolve(file)
@@ -28,8 +28,8 @@ export class FileService extends BaseService {
     })
   }
 
-  public getAll(): Promise<File[]> {
-    return new Promise<File[]>(async (resolve, reject): Promise<void> => {
+  public getAll() {
+    return new Promise<File[]>(async (resolve, reject) => {
       try {
         const files = await this.repository.find()
         return resolve(files)
@@ -39,8 +39,8 @@ export class FileService extends BaseService {
     })
   }
 
-  public async delete(id: number): Promise<void> {
-    return new Promise<void>(async (resolve, reject): Promise<void> => {
+  public async delete(id: number) {
+    return new Promise<void>(async (resolve, reject) => {
       try {
         const file = await this.repository.findOne({ where: { id } })
 
@@ -57,8 +57,8 @@ export class FileService extends BaseService {
     })
   }
 
-  public saveStringIntoFile(path: string, content: string): Promise<void> {
-    return new Promise((resolve, reject): void => {
+  public saveStringIntoFile(path: string, content: string) {
+    return new Promise<void>((resolve, reject) => {
       try {
         fs.writeFile(path, content, function (err): void {
           if (err) return reject(err)

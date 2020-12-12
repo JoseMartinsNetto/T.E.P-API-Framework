@@ -11,8 +11,8 @@ export class EmailService extends BaseService {
     return new EmailService(SendGrid)
   }
 
-  public async sendMail(data: IEmailRequest): Promise<IEmailRequest> {
-    return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
+  public async sendMail(data: IEmailRequest) {
+    return new Promise<IEmailRequest>(async (resolve, reject) => {
       try {
         this.sendGrid.setApiKey(String(process.env.SENDGRID_API_KEY))
 

@@ -1,12 +1,18 @@
-import jwt from "jsonwebtoken"
+import Jwt from "jsonwebtoken"
 import { Response, NextFunction } from "express"
 import { IApplicationRequest } from "../../Configs/Interfaces/IApplicationRequest"
-import {IDecodedJWT, IDecodedObject} from "../../../Services/Resources/Interfaces/IDecodedJWT"
 import { IApplicationMiddleware } from "../../Configs/Interfaces/IApplicationMiddleware"
 import UnauthorizedException from "../HttpExceptions/UnauthorizedException"
 import { Constants } from "../../../Constants"
+import { DecodedJWT, DecodedObject } from "../../../Services/Resources/Utils/JWTDecoding"
 
-class AuthMiddleware implements IApplicationMiddleware {
+export class AuthMiddleware implements IApplicationMiddleware {
+  constructor(private jwt: typeof Jwt) { }
+
+  static instance() {
+    return new AuthMiddleware(Jwt)
+  }
+
   public intercepter(req: IApplicationRequest, res: Response, next: NextFunction): NextFunction | Response | void {
     try {
       const authHeader = req.headers.authorization
@@ -30,23 +36,19 @@ class AuthMiddleware implements IApplicationMiddleware {
         throw new UnauthorizedException(Constants.ErrorMessages.auth.invalidToken)
       }
 
-      jwt.verify(token, String(process.env.AUTH_SECRET), (err, decoded: IDecodedJWT): void => {
+      this.jwt.verify(token, String(process.env.AUTH_SECRET), (err, decoded: DecodedJWT): void => {
         if (err) {
           throw new UnauthorizedException(Constants.ErrorMessages.auth.expiredToken)
         }
 
-        const decodedObject = decoded as IDecodedObject
+        const decodedObject = decoded as DecodedObject
 
         req.userId = decodedObject.id
         next()
       })
-
-      jwt.verify(token, String(process.env.AUTH_SECRET), (err, decoded): void => { })
 
     } catch (error) {
       return res.status(error.code).json(error)
     }
   }
 }
-
-export default new AuthMiddleware().intercepter

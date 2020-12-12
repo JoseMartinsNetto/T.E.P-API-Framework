@@ -1,12 +1,11 @@
 import ISignupRequest from "./Resources/Interfaces/Request/ISignupRequest"
 import IAuthRequest from "./Resources/Interfaces/Request/IAuthRequest"
-import IGenerateTokenParams from "./Resources/Interfaces/IGenerateTokenParams"
 import IEmailRequest from "./Resources/Interfaces/IEmailRequest"
 import IResetPasswordRequest from "./Resources/Interfaces/Request/IResetPasswordRequest"
 
 import bcryptjs from "bcryptjs"
 import crypto from "crypto"
-import jwt from "jsonwebtoken"
+import Jwt from "jsonwebtoken"
 import { EmailService } from "./EmailService"
 import { User } from "../Domain/Models/User"
 import BadRequestException from "../Application/Http/HttpExceptions/BadRequestException"
@@ -16,22 +15,27 @@ import { BaseService } from "./BaseService"
 import { Constants } from "../Constants"
 import { getRepository, Repository } from "typeorm"
 import IAuthResponse from "./Resources/Interfaces/Response/IAuthResponse"
+import { EncodingObject } from "./Resources/Utils/JWTDecoding"
 
 export class UserService extends BaseService {
-  constructor(private repository: Repository<User>, public emailService: EmailService) {
+  constructor(
+    private repository: Repository<User>,
+    private emailService: EmailService,
+    private jwt: typeof Jwt
+  ) {
     super()
   }
 
   static instance() {
-    return new UserService(getRepository(User), EmailService.instance())
+    return new UserService(getRepository(User), EmailService.instance(), Jwt)
   }
 
-  private generateToken(params: IGenerateTokenParams): string {
-    return jwt.sign(params, String(process.env.AUTH_SECRET), { expiresIn: process.env.TOKEN_EXPIRES })
+  private generateToken(params: EncodingObject): string {
+    return this.jwt.sign(params, String(process.env.AUTH_SECRET), { expiresIn: process.env.TOKEN_EXPIRES })
   }
 
-  private userExists(userData: ISignupRequest): Promise<boolean> {
-    return new Promise<boolean>(async (resolve, reject): Promise<void> => {
+  private userExists(userData: ISignupRequest) {
+    return new Promise<boolean>(async (resolve, reject) => {
       try {
         const { email } = userData
 
@@ -48,8 +52,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public signup(userData: ISignupRequest): Promise<IAuthResponse> {
-    return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
+  public signup(userData: ISignupRequest) {
+    return new Promise<IAuthResponse>(async (resolve, reject) => {
       try {
         const { password } = userData
         const userExists = await this.userExists(userData)
@@ -77,8 +81,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public createUser(userData: ISignupRequest): Promise<User[]> {
-    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+  public createUser(userData: ISignupRequest) {
+    return new Promise<User[]>(async (resolve, reject) => {
       try {
         const { password } = userData
         const userExists = await this.userExists(userData)
@@ -103,8 +107,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public editUser(userId: number, userData: ISignupRequest): Promise<User[]> {
-    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+  public editUser(userId: number, userData: ISignupRequest) {
+    return new Promise<User[]>(async (resolve, reject) => {
       try {
         const user = await this.repository.findOne(userId)
 
@@ -119,8 +123,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public async authenticate(loginData: IAuthRequest): Promise<IAuthResponse> {
-    return new Promise<IAuthResponse>(async (resolve, reject): Promise<void> => {
+  public async authenticate(loginData: IAuthRequest) {
+    return new Promise<IAuthResponse>(async (resolve, reject) => {
       try {
         const { email, password } = loginData
 
@@ -147,8 +151,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public forgotPassword(email: string): Promise<IEmailRequest> {
-    return new Promise<IEmailRequest>(async (resolve, reject): Promise<void> => {
+  public forgotPassword(email: string) {
+    return new Promise<IEmailRequest>(async (resolve, reject) => {
       try {
         const user = await this.repository.findOne({ where: { email } })
 
@@ -182,8 +186,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public resetPassword(data: IResetPasswordRequest): Promise<void> {
-    return new Promise<void>(async (resolve, reject): Promise<void> => {
+  public resetPassword(data: IResetPasswordRequest) {
+    return new Promise<void>(async (resolve, reject) => {
       try {
         const { email, password, token } = data
         const user = await this.repository.findOne({ where: { email } })
@@ -215,8 +219,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public getUsers(): Promise<User[]> {
-    return new Promise<User[]>(async (resolve, reject): Promise<void> => {
+  public getUsers() {
+    return new Promise<User[]>(async (resolve, reject) => {
       try {
         const users = await this.repository.find()
         return resolve(users)
@@ -226,8 +230,8 @@ export class UserService extends BaseService {
     })
   }
 
-  public getUser(id: number): Promise<User> {
-    return new Promise<User>(async (resolve, reject): Promise<void> => {
+  public getUser(id: number) {
+    return new Promise<User>(async (resolve, reject) => {
       try {
         const user = await this.repository.findOne({ where: { id } })
         return resolve(user)
